@@ -476,3 +476,63 @@ body {
 }
 
 .dispatch-whatsapp-btn:active { opacity: 0.9; }
+
+/* Agency Branding Footer */
+.app-footer {
+  background: #111010;
+  color: #A09E9A;
+  padding: 30px 20px 40px;
+  margin-top: 40px;
+  border-top: 2px solid var(--primary);
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.powered-by {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.agency-name {
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-top: 2px;
+}
+
+.agency-tagline {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.footer-meta {
+  border-top: 1px solid #282624;
+  padding-top: 14px;
+  font-size: 0.725rem;
+  color: #807E7A;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.verification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--whatsapp-green);
+  font-weight: 600;
+  font-size: 0.7rem;
+}
