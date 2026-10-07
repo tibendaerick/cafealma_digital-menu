@@ -18,16 +18,18 @@
 <body>
 
   <!-- Sticky Top Header -->
-  <header class="app-header">
-    <div class="brand-container">
-      <h1 class="brand-title">CAFÉ ALMA - MUBENDE(near L.K Filling Station)</h1>
-      <span class="brand-subtitle">Foods, Coffee & Cold Refreshments</span>
+<header class="header">
+  <div class="header-container">
+    <div class="brand-wrapper">
+      <h1 class="brand-title">CAFÉ ALMA <span>MUBENDE</span></h1>
+      <span class="brand-subtitle" style="font-size: 0.8rem; color: #94a3b8; display: block;">Foods, Coffee & Cold Refreshments</span>
     </div>
 
-    <!-- Location & Mode Selector Bar (12 Tables + VIP Balcony + Delivery) -->
-    <div class="location-bar">
-      <label for="locationSelect" class="location-label">Service Type / Seat:</label>
-      <select id="locationSelect" class="location-dropdown" onchange="handleLocationChange()">
+    <div class="header-actions">
+      <button id="call-waiter-btn" class="btn-waiter">🔔 Call Waiter</button>
+      <button id="request-bill-btn" class="btn-waiter">🧾 Request Bill</button>
+
+      <select id="locationSelect" class="location-selector" onchange="handleLocationChange()">
         <option value="Table 01">Table 01</option>
         <option value="Table 02">Table 02</option>
         <option value="Table 03">Table 03</option>
@@ -44,6 +46,8 @@
         <option value="DELIVERY">Home / Office Delivery (+3,000 UGX Fee)</option>
       </select>
     </div>
+  </div>
+</header>
 
     <!-- Live Search & Category Pills -->
     <div class="search-container">
