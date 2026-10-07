@@ -1,49 +1,36 @@
+const crypto = require('crypto');
+
+const WA = process.env.WHATSAPP_NUMBER || '256751120144';
+const SECRET = process.env.SIGNING_SECRET || 'change-this-secret';
+const sign = s => crypto.createHmac('sha256', SECRET).update(s).digest('hex');
+const fail = (res, code, message) => res.status(code).json({ success: false, message });
+
 module.exports = async (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
-  }
-
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method !== 'POST') return fail(res, 405, 'Method not allowed');
   try {
-    const { tableNumber, requestType } = req.body;
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const { orderId, location, total, token } = b;
+    if (!orderId || !location || !Number.isInteger(total) || typeof token !== 'string') return fail(res, 400, 'Invalid bill request.');
 
-    if (!tableNumber) {
-      return res.status(400).json({ success: false, message: 'Table number is required.' });
-    }
+    const good = Buffer.from(sign(`${orderId}|${location}|${total}`));
+    const got = Buffer.from(token);
+    if (good.length !== got.length || !crypto.timingSafeEqual(good, got)) return fail(res, 403, 'This order could not be verified.');
 
-    const type = requestType || 'Bill / Waiter Assistance';
-    let message = `*WAITER ALERT / BILL REQUEST*\n`;
-    message += `----------------------------\n`;
-    message += `*Table:* ${tableNumber}\n`;
-    message += `*Request:* ${type}\n`;
-    message += `*Time:* ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}\n`;
+    const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Kampala' });
+    const L = '------------------------------------';
+    const msg = [
+      `🧾 *BILL REQUEST - ${String(location).replace('Table ', 'Table #')}*`,
+      '*CAFE ALMA FOODS - MUBENDE*', L,
+      `🆔 *Order:* ${orderId}`,
+      `💰 *Amount due:* UGX ${total.toLocaleString('en-US')}`,
+      `🕒 ${time}`, L,
+      '_Sent via Digital Table Menu_'
+    ].join('\n');
 
-    const encodedText = encodeURIComponent(message);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Request generated successfully.',
-      whatsappPayload: encodedText
-    });
-
-  } catch (error) {
-    console.error('Bill request error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal Server Error',
-      error: error.message
-    });
+    return res.status(200).json({ success: true, waUrl: `https://wa.me/${WA}?text=${encodeURIComponent(msg)}` });
+  } catch (err) {
+    console.error('request-bill error:', err);
+    return fail(res, 500, 'Something went wrong. Please try again.');
   }
 };
