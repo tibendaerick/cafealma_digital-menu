@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e8590c">
 <title>Café Alma Foods — Digital Table &amp; Delivery Menu</title>
-<link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/favicon.png">
+<link rel="icon" type="image/png" href="assets/favicon.png?v=2">
+<link rel="apple-touch-icon" href="assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
 
 <header class="header"><div class="wrap">
   <div class="brand">
-    <div><h1>CAFÉ ALMA <span>MUBENDE</span></h1><small>Foods, Coffee &amp; Cold Refreshments</small></div>
+    <div><h1>CAFÉ ALMA <span>MUBENDE</span></h1><small>Foods, Coffee. Located at L.K Fuel Station - Mubende Town</small></div>
     <button id="themeBtn" class="pill" aria-label="Toggle dark mode">🌙</button>
   </div>
   <div class="actions">
@@ -28,7 +28,7 @@
 </div></header>
 
 <div class="wrap controls">
-  <div class="search"><span>🔍</span><input id="search" type="search" placeholder="Search pizza, coffee, rolex..." autocomplete="off"></div>
+  <div class="search"><span>🔍</span><input id="search" type="search" placeholder="Search coffee, alma4seasons pizza..." autocomplete="off"></div>
   <nav class="cats" id="cats">
     <button class="cat active" data-cat="all">All Items</button>
     <button class="cat" data-cat="breakfast">Breakfast</button>
@@ -52,12 +52,14 @@
   <div class="sh-body">
     <div id="cartList"></div>
     <label class="lbl" for="notes">Special instructions</label>
-    <textarea id="notes" class="f" maxlength="300" placeholder="e.g. no onions, Fanta for the soda, sweet chilli sauce"></textarea>
+    <textarea id="notes" class="f" maxlength="300" placeholder="e.g. no onions, Fanta soda, chilli sauce"></textarea>
     <div id="delivery" class="hidden">
-      <label class="lbl">Delivery details</label>
+      <label class="lbl" id="dLabel">Delivery Details</label>
       <input id="dName" class="f" placeholder="Full name *" autocomplete="name">
       <input id="dPhone" class="f" type="tel" placeholder="WhatsApp / phone number *" autocomplete="tel">
       <input id="dAddr" class="f" placeholder="Landmark / address *">
+      <select id="dArea" class="f"><option value="in">Within Mubende Municipality</option><option value="out">Outside Mubende Municipality</option></select>
+      <p id="pickNote" class="mut hidden" style="margin-top:8px;font-size:.85rem">⏱️ Ready in about 5–10 minutes.</p>
     </div>
     <label class="lbl" for="pay">Payment method</label>
     <select id="pay" class="f"><option>Cash</option><option>Mobile Money</option></select>
@@ -68,7 +70,7 @@
       <div class="tot"><span>Total</span><span id="sTot">UGX 0</span></div>
     </div>
   </div>
-  <div class="sh-foot"><button id="placeBtn" class="cta">Place order</button></div>
+  <div class="sh-foot"><button id="placeBtn" class="cta">Place Order</button></div>
 </div></div>
 
 <!-- Sent -->
@@ -85,12 +87,12 @@
 <!-- Waiter -->
 <div id="waiterSheet" class="overlay"><div class="sheet">
   <div class="grab"></div>
-  <div class="sh-head"><h3>Call a waiter</h3><button class="x" data-close aria-label="Close">&times;</button></div>
+  <div class="sh-head"><h3>Call a Waiter</h3><button class="x" data-close aria-label="Close">&times;</button></div>
   <div class="sh-body"><div class="wopts">
-    <button data-w="Extra cutlery / napkins">🍴 Cutlery / napkins</button>
-    <button data-w="Water / glasses refill">Water refill</button>
-    <button data-w="Table cleaning required">Table cleaning</button>
-    <button data-w="General assistance">General assistance</button>
+    <button data-w="Extra cutlery / napkins">Cutlery / napkins</button>
+    <button data-w="Water / glasses refill">Water re-fill</button>
+    <button data-w="Table cleaning required">Table Cleaning</button>
+    <button data-w="General assistance">General Assistance</button>
   </div></div>
 </div></div>
 

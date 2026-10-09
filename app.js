@@ -3,6 +3,8 @@
   const $ = s => document.querySelector(s);
   const WA = '256751120144';
   const FEES = { DELIVERY: 3000, 'VIP Balcony': 5000 };
+  const FREE_FROM = 25000;
+  const OFFER_END = new Date('2026-12-01T00:00:00+03:00')
   const PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f3e3d3'/%3E%3C/svg%3E";
 
   const ITEMS = {};
@@ -30,11 +32,15 @@
   };
   const sub = () => Object.entries(cart).reduce((s, [id, n]) => s + ITEMS[id].price * n, 0);
   const count = () => Object.values(cart).reduce((s, n) => s + n, 0);
-  const fee = () => FEES[$('#loc').value] || 0;
+  const fee = () => {
+  const l = $('#loc').value;
+  if (l === 'DELIVERY' && $('#dArea').value === 'in' && sub() >= FREE_FROM && new Date() < OFFER_END) return 0;
+  return FEES[l] || 0;
+};
 
   /* ---------- location dropdown ---------- */
-  const LOCS = [...Array.from({ length: 12 }, (_, i) => 'Table ' + String(i + 1).padStart(2, '0')), 'VIP Balcony', 'DELIVERY'];
-  const LBL = { 'VIP Balcony': 'VIP Balcony (+5,000)', DELIVERY: 'Home / Office Delivery (+3,000)' };
+  const LOCS = [...Array.from({ length: 6 }, (_, i) => 'Table ' + String(i + 1).padStart(2, '0')), 'VIP Balcony', 'PICKUP', 'DELIVERY'];
+  const LBL = { 'VIP Balcony': 'VIP Balcony (+5,000)', PICKUP: 'Pickup at Café (ready in 5–10 min)', DELIVERY: 'Home / Office Delivery (5,000)' };
   $('#loc').innerHTML = '<option value="">📍 Choose table or delivery</option>' +
     LOCS.map(l => `<option value="${l}">${LBL[l] || l}</option>`).join('');
 
@@ -91,10 +97,16 @@
       return `<div class="row"><div><b>${i.name}</b><br><small class="mut">UGX ${fmt(i.price)} × ${n} = UGX ${fmt(i.price * n)}</small></div>
         <div class="ctl"><button class="q" data-a="dec" data-id="${id}">−</button><span class="n">${n}</span><button class="q" data-a="inc" data-id="${id}">+</button></div></div>`;
     }).join('');
-    $('#delivery').classList.toggle('hidden', loc !== 'DELIVERY');
+    const isDel = loc === 'DELIVERY', isPick = loc === 'PICKUP';
+    $('#delivery').classList.toggle('hidden', !(isDel || isPick));
+    $('#dLabel').textContent = isPick ? 'Pickup details' : 'Delivery details';
+    $('#dAddr').classList.toggle('hidden', !isDel);
+    $('#dArea').classList.toggle('hidden', !isDel);
+    $('#pickNote').classList.toggle('hidden', !isPick);
+    $('#pay').options[0].text = isPick ? 'Cash on pickup' : isDel ? 'Cash on delivery' : 'Cash';
     $('#sFeeLbl').textContent = loc === 'DELIVERY' ? 'Delivery fee' : loc === 'VIP Balcony' ? 'VIP charge' : 'Service fee';
     $('#sSub').textContent = 'UGX ' + fmt(sub());
-    $('#sFee').textContent = 'UGX ' + fmt(fee());
+    $('#sFee').textContent = isDel && fee() === 0 ? 'FREE 🎉' : 'UGX ' + fmt(fee());
     $('#sTot').textContent = 'UGX ' + fmt(sub() + fee());
     $('#placeBtn').textContent = 'Place order · UGX ' + fmt(sub() + fee());
   }
@@ -106,9 +118,10 @@
       items: Object.entries(cart).map(([id, qty]) => ({ id, qty })),
       location: loc, notes: $('#notes').value.trim(), payment: $('#pay').value, hp: $('#hp').value
     };
-    if (loc === 'DELIVERY') {
-      body.name = $('#dName').value.trim(); body.phone = $('#dPhone').value.trim(); body.address = $('#dAddr').value.trim();
-      if (!body.name || !body.phone || !body.address) return toast('Please fill in your name, phone and address.');
+    if (loc === 'DELIVERY' || loc === 'PICKUP') {
+      body.name = $('#dName').value.trim(); body.phone = $('#dPhone').value.trim();
+      if (loc === 'DELIVERY') { body.address = $('#dAddr').value.trim(); body.area = $('#dArea').value; }
+      if (!body.name || !body.phone || (loc === 'DELIVERY' && !body.address)) return toast(loc === 'PICKUP' ? 'Please fill in your name and phone number.' : 'Please fill in your name, phone and address.');
     }
     const btn = $('#placeBtn'); btn.disabled = true; btn.textContent = 'Preparing your order…';
     try {
@@ -128,7 +141,7 @@
   }
 
   /* ---------- bill ---------- */
-  const billOrders = () => { const l = $('#loc').value; return l && l !== 'DELIVERY' ? orders.filter(o => o.loc === l) : []; };
+  const billOrders = () => { const l = $('#loc').value; return /^(Table|VIP)/.test(l) ? orders.filter(o => o.loc === l) : []; };
   function syncBill() {
     const ok = billOrders().length > 0;
     $('#billBtn').classList.toggle('locked', !ok);
@@ -186,13 +199,13 @@
   $('#loc').addEventListener('change', () => {
     refresh(); syncBill();
     if ($('#cartSheet').classList.contains('open')) renderCart();
-  });
+  });$('#dArea').addEventListener('change', () => { refresh(); renderCart(); });
   $('#cartBar').addEventListener('click', () => { renderCart(); open('cartSheet'); });
   $('#placeBtn').addEventListener('click', place);
   $('#billBtn').addEventListener('click', openBill);
   $('#waiterBtn').addEventListener('click', () => {
     const l = $('#loc').value;
-    if (!l || l === 'DELIVERY') return toast('Choose your table first.');
+    if (!l || l === 'DELIVERY' || l === 'PICKUP') return toast('The waiter button is for dine-in tables only.');
     open('waiterSheet');
   });
 

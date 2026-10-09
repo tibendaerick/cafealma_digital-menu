@@ -14,14 +14,15 @@ const MENU_DATA =
       { id: 'b11', name: 'Chapati', price: 2000, badge: 'Student favorite', desc: 'Soft, hand-spun Ugandan chapati grilled to golden perfection.', img: 'cafe images/chapati.jpg' }
     ],
     lunch: [
-      { id: 'l1', name: 'Lusaniya (Medium)', price: 52000, badge: "Chef's Pick", desc: 'Local medium Lusaniya with all food choices.', img: 'cafe images/lusaniyamedium.jpg' },
-      { id: 'l2', name: 'Lusaniya (Large)', price: 75000, badge: 'Group Special', desc: 'Extra-vagant large Lusaniya with all food choices, for sharing with group.', img: 'cafe images/lusaniyalarge.jpg' },
-      { id: 'l3', name: 'Whole Chicken', price: 80000, badge: 'Special', desc: 'Full oven-roasted chicken with spices and sauces.', img: 'cafe images/chickenwhole.jpg' },
-      { id: 'l4', name: 'Chips & Liver', price: 22000, badge: '', desc: 'Golden french fries paired with spiced beef liver.', img: 'cafe images/chipsliver.jpg' },
-      { id: 'l5', name: 'Chips & Chicken', price: 22000, badge: 'Best Seller', desc: 'Crispy french fries served alongside fried chicken.', img: 'cafe images/chips-chicken.jpg' },
-      { id: 'l6', name: "Chips & Goat's Meat", price: 22000, badge: '', desc: 'Crispy french fries served with stewed, tender goat meat.', img: 'cafe images/chipsgoat.jpg' },
-      { id: 'l7', name: 'Plain Chips', price: 7000, badge: '', desc: 'Freshly cut, fried potato fries lightly seasoned with salt.', img: 'cafe images/chipsplain.jpg' },
-      { id: 'l8', name: 'Pilau', price: 15000, badge: 'Popular', desc: 'Pilau rice cooked in rich spiced beef and aromatic spices.', img: 'cafe images/pilau.jpg' }
+      { id: 'l1', name: 'Lusaniya (Small)', price: 25000, badge: "Best Seller", desc: 'Local single Lusaniya with all food choices.', img: 'cafe images/lusaniyamedium.jpg' },
+      { id: 'l2', name: 'Lusaniya (Medium)', price: 52000, badge: "Chef's Pick", desc: 'Local medium Lusaniya with all food choices.', img: 'cafe images/lusaniyamedium.jpg' },
+      { id: 'l3', name: 'Lusaniya (Large)', price: 75000, badge: 'Group Special', desc: 'Extra-vagant large Lusaniya with all food choices, for sharing with group.', img: 'cafe images/lusaniyalarge.jpg' },
+      { id: 'l4', name: 'Whole Chicken', price: 80000, badge: 'Special', desc: 'Full oven-roasted chicken served with cabbage, pilau, golden french fries and sauces.', img: 'cafe images/chickenwhole.jpg' },
+      { id: 'l5', name: 'Chips & Liver', price: 22000, badge: '', desc: 'Golden french fries paired with spiced beef liver.', img: 'cafe images/chipsliver.jpg' },
+      { id: 'l6', name: 'Chips & Chicken', price: 22000, badge: 'Best Seller', desc: 'Crispy french fries served alongside fried chicken.', img: 'cafe images/chips-chicken.jpg' },
+      { id: 'l7', name: "Chips & Goat's Meat", price: 22000, badge: '', desc: 'Crispy french fries served with stewed, tender goat meat.', img: 'cafe images/chipsgoat.jpg' },
+      { id: 'l8', name: 'Plain Chips', price: 7000, badge: '', desc: 'Freshly cut, fried potato fries lightly seasoned with salt.', img: 'cafe images/chipsplain.jpg' },
+      { id: 'l9', name: 'Pilau', price: 15000, badge: 'Popular', desc: 'Pilau rice cooked in rich spiced beef and aromatic spices.', img: 'cafe images/pilau.jpg' }
     ],
     mains: [
       { id: 'm1', name: 'Chicken Wings', price: 25000, badge: 'Popular', desc: 'Crispy chicken wings tossed in your choice of sweet chilli or barbecue sauce.', img: 'cafe images/chickenwings.jpg' },

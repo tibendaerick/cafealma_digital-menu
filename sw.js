@@ -1,4 +1,4 @@
-const V = 'alma-v1';
+const V = 'alma-v2';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'menu-data.js'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
