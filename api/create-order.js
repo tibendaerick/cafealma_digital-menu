@@ -16,7 +16,7 @@ const limited = ip => {
   const a = (hits.get(ip) || []).filter(t => now - t < 60000);
   a.push(now); hits.set(ip, a);
   if (hits.size > 5000) hits.clear();
-  return a.length > 8;
+  return a.length > 30;
 };
 const clean = (s, n) => String(s || '').replace(/[*_~`]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
 const fmt = n => n.toLocaleString('en-US');

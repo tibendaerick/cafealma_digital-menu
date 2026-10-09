@@ -60,7 +60,7 @@
   const card = i => `<article class="card" data-id="${i.id}">
     <div class="img"><img src="${encodeURI(i.img)}" alt="${i.name}" loading="lazy" decoding="async" width="400" height="300">${i.badge ? `<span class="badge">${i.badge}</span>` : ''}</div>
     <div class="info"><h4>${i.name}</h4><p>${i.desc}</p>
-      <div class="foot"><b>UGX ${fmt(i.price)}</b><span class="ctl">${ctl(i.id)}</span></div></div></article>`;
+    <div class="foot"><b>UGX ${fmt(i.price)}</b><span class="ctl">${ctl(i.id)}</span></div></div></article>`;
 
   function renderMenu() {
     const pool = cat === 'all' ? Object.values(MENU_DATA).flat() : MENU_DATA[cat] || [];
@@ -136,7 +136,7 @@
       $('#sentId').textContent = d.orderId; $('#waLink').href = d.waUrl;
       open('sentSheet');
     } catch (e) {
-      toast(e.message === 'Failed to fetch' ? 'No connection. Please try again.' : e.message);
+           toast((e.message === 'Failed to fetch' ? 'No connection.' : e.message) + ' Refresh. Still stuck? Call 0751120144.');
     } finally { btn.disabled = false; renderCart(); }
   }
 
@@ -171,7 +171,7 @@
     const loc = $('#loc').value;
     close('waiterSheet');
     const msg = `🔔 *WAITER CALL - ${loc.replace('Table ', 'Table #')}*\n*CAFE ALMA FOODS - MUBENDE*\n------------------------------------\n📝 *Request:* ${reason}\n------------------------------------\n_Sent via Digital Table Menu_`;
-    location.href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+   window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
   }
 
   /* ---------- events ---------- */
