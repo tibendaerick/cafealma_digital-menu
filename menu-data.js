@@ -26,7 +26,7 @@ const MENU_DATA =
     ],
     mains: [
       { id: 'm1', name: 'Chicken Wings', price: 25000, badge: 'Popular', desc: 'Crispy chicken wings tossed in your choice of sweet chilli or barbecue sauce.', img: 'cafe images/chickenwings.jpg' },
-      { id: 'm2', name: 'Special Burger', price: 17000, badge: "Chef's Pick", desc: 'Juicy beef layered with cheese, fried egg, lettuce and special Alma sauce.', img: 'cafe images/burgerspecial.jpg' },
+      { id: 'm2', name: 'Special Burger', price: 17000, badge: "Chef's Pick", desc: 'Beef layered with cheese, fried egg, lettuce and special Alma sauce. Served with french fries and extra.', img: 'cafe images/burgerspecial.jpg' },
       { id: 'm3', name: 'Plain Burger', price: 11000, badge: '', desc: 'Grilled beef patty served in a toasted bun.', img: 'cafe images/burgerplain.jpg' },
       { id: 'm4', name: 'Chicken Biryani', price: 25000, badge: 'Indian Special', desc: 'Basmatti rice  with whole spices and tender chicken.', img: 'cafe images/chickenbiryani.jpg' },
       { id: 'm5', name: 'Chicken Curry', price: 25000, badge: '', desc: 'Chicken stew cooked in a thick, aromatic coconut and spices.', img: 'cafe images/chickencurry.jpg' },

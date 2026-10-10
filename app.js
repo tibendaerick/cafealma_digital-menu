@@ -2,7 +2,7 @@
   'use strict';
   const $ = s => document.querySelector(s);
   const WA = '256751120144';
-  const FEES = { DELIVERY: 3000, 'VIP Balcony': 5000 };
+  const FEES = { DELIVERY: 3000, 'VIP Balcony': 1000 };
   const FREE_FROM = 25000;
   const OFFER_END = new Date('2026-12-01T00:00:00+03:00')
   const PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f3e3d3'/%3E%3C/svg%3E";
@@ -40,7 +40,7 @@
 
   /* ---------- location dropdown ---------- */
   const LOCS = [...Array.from({ length: 6 }, (_, i) => 'Table ' + String(i + 1).padStart(2, '0')), 'VIP Balcony', 'PICKUP', 'DELIVERY'];
-  const LBL = { 'VIP Balcony': 'VIP Balcony (+5,000)', PICKUP: 'Pickup at Café (ready in 5–10 min)', DELIVERY: 'Home / Office Delivery (5,000)' };
+  const LBL = { 'VIP Balcony': 'VIP Balcony (+1,000)', PICKUP: 'Pickup at Café (ready in 5–10 min)', DELIVERY: 'Home / Office Delivery (3,000)' };
   $('#loc').innerHTML = '<option value="">📍 Choose table or delivery</option>' +
     LOCS.map(l => `<option value="${l}">${LBL[l] || l}</option>`).join('');
 
