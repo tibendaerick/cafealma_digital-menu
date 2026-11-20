@@ -1,273 +1,222 @@
-// Target Client Configuration
-const CONFIG = {
-  restaurantName: "Café Alma Foods - Mubende",
-  whatsappNumber: "256766845860", // Replace your cafe manager number
-  currency: "UGX"
+(() => {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const WA = '256751120144';
+  const FEES = { DELIVERY: 3000, 'VIP Balcony': 1000 };
+  const FREE_FROM = 25000;
+  const OFFER_END = new Date('2026-12-01T00:00:00+03:00')
+  const PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f3e3d3'/%3E%3C/svg%3E";
+
+  const ITEMS = {};
+  Object.values(MENU_DATA).forEach(list => list.forEach(i => (ITEMS[i.id] = i)));
+
+  const get = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const fmt = n => Number(n).toLocaleString('en-US');
+
+  let cart = get('alma_cart', {});
+  Object.keys(cart).forEach(id => { if (!ITEMS[id] || !(cart[id] > 0)) delete cart[id]; });
+  let orders = get('alma_orders', []).filter(o => Date.now() - o.t < 8 * 36e5);
+  let cat = 'all', q = '', timer;
+
+  /* ---------- helpers ---------- */
+  const open = id => { $('#' + id).classList.add('open'); document.body.style.overflow = 'hidden'; };
+  const close = id => {
+    $('#' + id).classList.remove('open');
+    if (!document.querySelector('.overlay.open')) document.body.style.overflow = '';
+  };
+  const toast = m => {
+    const t = $('#toast');
+    t.textContent = m; t.classList.remove('hidden');
+    clearTimeout(t._t); t._t = setTimeout(() => t.classList.add('hidden'), 3200);
+  };
+  const sub = () => Object.entries(cart).reduce((s, [id, n]) => s + ITEMS[id].price * n, 0);
+  const count = () => Object.values(cart).reduce((s, n) => s + n, 0);
+  const fee = () => {
+  const l = $('#loc').value;
+  if (l === 'DELIVERY' && $('#dArea').value === 'in' && sub() >= FREE_FROM && new Date() < OFFER_END) return 0;
+  return FEES[l] || 0;
 };
 
-// Menu Inventory Data
-const MENU_DATA = [
-  {
-    id: 101,
-    name: "Classic English BreakFast",
-    category: "fastfood",
-    price: 25000,
-    badge: "Popular",
-    desc: "100% classic breakfast, farm-fresh eggs cooked any style paired with warm toasted bread, breakfast sausage with choice of melted cheese.",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 102,
-    name: "Chicken Luch Box",
-    category: "mains",
-    price: 25000,
-    badge: "Chef Pick",
-    desc: "Golden crunchy battered chicken pieces served with spicy garlic dip.",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 103,
-    name: "Crispy Deep-Fried Chicken Wings(3pcs)",
-    category: "fastfood",
-    price: 20000,
-    badge: null,
-    desc: "Golden crunchy battered chicken wings served with spicy tomato dip.",
-    image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 104,
-    name: "Fresh Passion Fruit Juice (1L)",
-    category: "drinks",
-    price: 7000,
-    badge: "Fresh",
-    desc: "Naturally extracted organic local fruit choice juice served ice-cold.",
-    image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 105,
-    name: "Special Beef Pilau Rice",
-    category: "specials",
-    price: 15000,
-    badge: "Limited",
-    desc: "Aromatic spiced beef pilau served with kachumbari salad & banana.",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=300&q=80"
-  },
-  {
-    id: 106,
-    name: "Creamy Chocolate Milkshake",
-    category: "drinks",
-    price: 12000,
-    badge: null,
-    desc: "Rich chocolate ice cream blend topped with whipped cream & cocoa dusting.",
-    image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=300&q=80"
+  /* ---------- location dropdown ---------- */
+  const LOCS = [...Array.from({ length: 6 }, (_, i) => 'Table ' + String(i + 1).padStart(2, '0')), 'VIP Balcony', 'PICKUP', 'DELIVERY'];
+  const LBL = { 'VIP Balcony': 'VIP Balcony (+1,000)', PICKUP: 'Pickup at Café (ready in 5–10 min)', DELIVERY: 'Home / Office Delivery (3,000)' };
+  $('#loc').innerHTML = '<option value="">📍 Choose table or delivery</option>' +
+    LOCS.map(l => `<option value="${l}">${LBL[l] || l}</option>`).join('');
+
+  (function fromUrl() {
+    const p = new URLSearchParams(location.search);
+    const v = (p.get('table') || p.get('location') || '').trim();
+    if (!v) return;
+    let t = /^vip/i.test(v) ? 'VIP Balcony' : /^deliver/i.test(v) ? 'DELIVERY' : 'Table ' + v.replace(/\D/g, '').padStart(2, '0');
+    if (LOCS.includes(t)) $('#loc').value = t;
+  })();
+
+  /* ---------- menu ---------- */
+  const ctl = id => cart[id]
+    ? `<button class="q" data-a="dec" data-id="${id}" aria-label="Remove one">−</button><span class="n">${cart[id]}</span><button class="q" data-a="inc" data-id="${id}" aria-label="Add one">+</button>`
+    : `<button class="add" data-a="inc" data-id="${id}">+ Add</button>`;
+
+  const card = i => `<article class="card" data-id="${i.id}">
+    <div class="img"><img src="${encodeURI(i.img)}" alt="${i.name}" loading="lazy" decoding="async" width="400" height="300">${i.badge ? `<span class="badge">${i.badge}</span>` : ''}</div>
+    <div class="info"><h4>${i.name}</h4><p>${i.desc}</p>
+    <div class="foot"><b>UGX ${fmt(i.price)}</b><span class="ctl">${ctl(i.id)}</span></div></div></article>`;
+
+  function renderMenu() {
+    const pool = cat === 'all' ? Object.values(MENU_DATA).flat() : MENU_DATA[cat] || [];
+    const list = pool.filter(i => !q || i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q));
+    $('#menu').innerHTML = list.length ? list.map(card).join('') : '<div class="empty">No menu items matched your search.</div>';
   }
-];
+  $('#menu').addEventListener('error', e => {
+    if (e.target.tagName === 'IMG' && !e.target.src.startsWith('data:')) e.target.src = PH;
+  }, true);
 
-// Active State
-let cart = {}; // Key: itemId, Value: quantity
-let currentCategory = "all";
-
-// Helper: Format Currency
-function formatMoney(amount) {
-  return `${CONFIG.currency} ${amount.toLocaleString()}`;
-}
-
-// Render Menu Items
-function renderMenu() {
-  const container = document.getElementById('menuGrid');
-  container.innerHTML = '';
-
-  const filtered = currentCategory === 'all' 
-    ? MENU_DATA 
-    : MENU_DATA.filter(item => item.category === currentCategory);
-
-  filtered.forEach(item => {
-    const qty = cart[item.id] || 0;
-
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.innerHTML = `
-      <img src="${item.image}" alt="${item.name}" class="item-img" loading="lazy">
-      <div class="item-details">
-        <div>
-          <div class="item-header">
-            <h3 class="item-name">${item.name}</h3>
-            ${item.badge ? `<span class="item-badge">${item.badge}</span>` : ''}
-          </div>
-          <p class="item-desc">${item.desc}</p>
-        </div>
-        <div class="item-bottom">
-          <span class="item-price">${formatMoney(item.price)}</span>
-          ${qty > 0 ? `
-            <div class="qty-control">
-              <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-              <span class="qty-count">${qty}</span>
-              <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-            </div>
-          ` : `
-            <button class="add-btn" onclick="updateQty(${item.id}, 1)">+ Add</button>
-          `}
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-
-  updateCartBar();
-}
-
-// Update Cart State
-function updateQty(itemId, change) {
-  const current = cart[itemId] || 0;
-  const next = current + change;
-
-  if (next <= 0) {
-    delete cart[itemId];
-  } else {
-    cart[itemId] = next;
+  /* ---------- cart ---------- */
+  function change(id, d) {
+    if (!ITEMS[id]) return;
+    const n = Math.min(50, (cart[id] || 0) + d);
+    if (n <= 0) delete cart[id]; else cart[id] = n;
+    document.querySelectorAll(`.card[data-id="${id}"] .ctl`).forEach(el => (el.innerHTML = ctl(id)));
+    refresh();
+    if ($('#cartSheet').classList.contains('open')) renderCart();
   }
 
-  renderMenu();
-}
-
-// Update Bottom Floating Cart Indicator
-function updateCartBar() {
-  const cartBar = document.getElementById('cartBar');
-  const cartBadge = document.getElementById('cartBadge');
-  const cartBarTotal = document.getElementById('cartBarTotal');
-
-  const totalItems = Object.values(cart).reduce((a, b) => a + b, 0);
-
-  if (totalItems > 0) {
-    cartBar.classList.remove('hidden');
-    cartBadge.textContent = totalItems;
-    
-    let totalPrice = 0;
-    Object.keys(cart).forEach(id => {
-      const item = MENU_DATA.find(i => i.id == id);
-      if (item) totalPrice += item.price * cart[id];
-    });
-
-    cartBarTotal.textContent = formatMoney(totalPrice);
-  } else {
-    cartBar.classList.add('hidden');
-  }
-}
-
-// Render Order Summary in Modal Sheet
-function renderCartModal() {
-  const list = document.getElementById('cartItemsList');
-  const subtotalEl = document.getElementById('summarySubtotal');
-  const totalEl = document.getElementById('summaryTotal');
-  const tableNum = document.getElementById('tableSelect').value;
-  document.getElementById('modalTableNum').textContent = `#${tableNum}`;
-
-  list.innerHTML = '';
-  let totalPrice = 0;
-
-  Object.keys(cart).forEach(id => {
-    const item = MENU_DATA.find(i => i.id == id);
-    if (!item) return;
-
-    const qty = cart[id];
-    const itemTotal = item.price * qty;
-    totalPrice += itemTotal;
-
-    const row = document.createElement('div');
-    row.className = 'cart-item-row';
-    row.innerHTML = `
-      <div>
-        <div class="cart-item-title">${item.name}</div>
-        <div class="cart-item-sub">${qty} x ${formatMoney(item.price)}</div>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-weight:700; font-size:0.85rem;">${formatMoney(itemTotal)}</span>
-        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">&times;</button>
-      </div>
-    `;
-    list.appendChild(row);
-  });
-
-  subtotalEl.textContent = formatMoney(totalPrice);
-  totalEl.textContent = formatMoney(totalPrice);
-}
-
-// Dispatch Structured Order Message to WhatsApp
-function dispatchWhatsAppOrder() {
-  const tableNum = document.getElementById('tableSelect').value;
-  const notes = document.getElementById('orderNotes').value.trim();
-  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-
-  let message = `🍽️ *NEW TABLE ORDER - Table #${tableNum}*\n`;
-  message += `------------------------------------\n`;
-
-  let totalPrice = 0;
-  Object.keys(cart).forEach(id => {
-    const item = MENU_DATA.find(i => i.id == id);
-    if (!item) return;
-
-    const qty = cart[id];
-    const lineTotal = item.price * qty;
-    totalPrice += lineTotal;
-    message += `• ${qty}x ${item.name} @ ${formatMoney(item.price)} = *${formatMoney(lineTotal)}*\n`;
-  });
-
-  message += `------------------------------------\n`;
-  message += `💰 *TOTAL PAYABLE:* ${formatMoney(totalPrice)}\n`;
-  message += `💳 *Payment Method:* ${paymentMethod}\n`;
-  if (notes) {
-    message += `📝 *Kitchen Notes:* ${notes}\n`;
-  }
-  message += `------------------------------------\n`;
-  message += `_Sent via Digital Table Menu_`;
-
-  const encodedMessage = encodeURIComponent(message);
-  const whatsappUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodedMessage}`;
-  
-  window.open(whatsappUrl, '_blank');
-}
-
-// Dispatch Call Waiter / Request Bill Quick Alerts
-function dispatchQuickAlert(type) {
-  const tableNum = document.getElementById('tableSelect').value;
-  let message = "";
-
-  if (type === 'waiter') {
-    message = `🔔 *ATTENTION WAITER - Table #${tableNum}*\nCustomer is requesting assistance at Table #${tableNum}.`;
-  } else if (type === 'bill') {
-    message = `🧾 *BILL REQUEST - Table #${tableNum}*\nCustomer at Table #${tableNum} is ready to settle their bill.`;
+  function refresh() {
+    const c = count();
+    $('#cartBar').classList.toggle('hidden', !c);
+    $('#cartCount').textContent = c;
+    $('#cartTotal').textContent = 'UGX ' + fmt(sub() + fee());
+    put('alma_cart', cart);
+    if (!c) close('cartSheet');
   }
 
-  const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodedMessage}`, '_blank');
-}
+  function renderCart() {
+    const loc = $('#loc').value;
+    $('#cartList').innerHTML = Object.entries(cart).map(([id, n]) => {
+      const i = ITEMS[id];
+      return `<div class="row"><div><b>${i.name}</b><br><small class="mut">UGX ${fmt(i.price)} × ${n} = UGX ${fmt(i.price * n)}</small></div>
+        <div class="ctl"><button class="q" data-a="dec" data-id="${id}">−</button><span class="n">${n}</span><button class="q" data-a="inc" data-id="${id}">+</button></div></div>`;
+    }).join('');
+    const isDel = loc === 'DELIVERY', isPick = loc === 'PICKUP';
+    $('#delivery').classList.toggle('hidden', !(isDel || isPick));
+    $('#dLabel').textContent = isPick ? 'Pickup details' : 'Delivery details';
+    $('#dAddr').classList.toggle('hidden', !isDel);
+    $('#dArea').classList.toggle('hidden', !isDel);
+    $('#pickNote').classList.toggle('hidden', !isPick);
+    $('#pay').options[0].text = isPick ? 'Cash on pickup' : isDel ? 'Cash on delivery' : 'Cash';
+    $('#sFeeLbl').textContent = loc === 'DELIVERY' ? 'Delivery fee' : loc === 'VIP Balcony' ? 'VIP charge' : 'Service fee';
+    $('#sSub').textContent = 'UGX ' + fmt(sub());
+    $('#sFee').textContent = isDel && fee() === 0 ? 'FREE 🎉' : 'UGX ' + fmt(fee());
+    $('#sTot').textContent = 'UGX ' + fmt(sub() + fee());
+    $('#placeBtn').textContent = 'Place order · UGX ' + fmt(sub() + fee());
+  }
 
-// Event Listeners Initialization
-document.addEventListener('DOMContentLoaded', () => {
-  renderMenu();
+  async function place() {
+    const loc = $('#loc').value;
+    if (!loc) { close('cartSheet'); toast('Please choose your table or delivery first.'); $('#loc').focus(); return; }
+    const body = {
+      items: Object.entries(cart).map(([id, qty]) => ({ id, qty })),
+      location: loc, notes: $('#notes').value.trim(), payment: $('#pay').value, hp: $('#hp').value
+    };
+    if (loc === 'DELIVERY' || loc === 'PICKUP') {
+      body.name = $('#dName').value.trim(); body.phone = $('#dPhone').value.trim();
+      if (loc === 'DELIVERY') { body.address = $('#dAddr').value.trim(); body.area = $('#dArea').value; }
+      if (!body.name || !body.phone || (loc === 'DELIVERY' && !body.address)) return toast(loc === 'PICKUP' ? 'Please fill in your name and phone number.' : 'Please fill in your name, phone and address.');
+    }
+    const btn = $('#placeBtn'); btn.disabled = true; btn.textContent = 'Preparing your order…';
+    try {
+      const r = await fetch('/api/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.success) throw new Error(d.message || 'Could not place your order.');
+      orders.push({ id: d.orderId, loc, total: d.total, token: d.token, t: Date.now() });
+      put('alma_orders', orders);
+      cart = {}; $('#notes').value = '';
+      renderMenu(); refresh(); syncBill();
+      close('cartSheet');
+      $('#sentId').textContent = d.orderId; $('#waLink').href = d.waUrl;
+      open('sentSheet');
+    } catch (e) {
+           toast((e.message === 'Failed to fetch' ? 'No connection.' : e.message) + ' Refresh. Still stuck? Call 0751120144.');
+    } finally { btn.disabled = false; renderCart(); }
+  }
 
-  // Category Filtering
-  document.querySelectorAll('.cat-pill').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      currentCategory = e.target.dataset.category;
-      renderMenu();
-    });
+  /* ---------- bill ---------- */
+  const billOrders = () => { const l = $('#loc').value; return /^(Table|VIP)/.test(l) ? orders.filter(o => o.loc === l) : []; };
+  function syncBill() {
+    const ok = billOrders().length > 0;
+    $('#billBtn').classList.toggle('locked', !ok);
+    $('#billIcon').textContent = ok ? '✅' : '🔒';
+  }
+  function openBill() {
+    const list = billOrders();
+    if (!list.length) return toast('Place an order first to unlock your bill.');
+    $('#billList').innerHTML = list.map(o => `<div class="row"><div><b>${o.id}</b><br><small class="mut">UGX ${fmt(o.total)} · ${new Date(o.t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</small></div>
+      <button class="cta sm" data-bill="${o.id}">Request bill</button></div>`).join('');
+    open('billSheet');
+  }
+  async function requestBill(id, el) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    el.disabled = true;
+    try {
+      const r = await fetch('/api/request-bill', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: o.id, location: o.loc, total: o.total, token: o.token }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.success) throw new Error(d.message || 'Could not request the bill.');
+      el.outerHTML = `<a class="cta sm" href="${d.waUrl}" target="_blank" rel="noopener">Send on WhatsApp</a>`;
+    } catch (e) { toast(e.message === 'Failed to fetch' ? 'No connection. Please try again.' : e.message); el.disabled = false; }
+  }
+
+  /* ---------- waiter ---------- */
+  function callWaiter(reason) {
+    const loc = $('#loc').value;
+    close('waiterSheet');
+    const msg = `🔔 *WAITER CALL - ${loc.replace('Table ', 'Table #')}*\n*CAFE ALMA FOODS - MUBENDE*\n------------------------------------\n📝 *Request:* ${reason}\n------------------------------------\n_Sent via Digital Table Menu_`;
+   window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const a = t.closest('[data-a]'); if (a) return change(a.dataset.id, a.dataset.a === 'inc' ? 1 : -1);
+    const w = t.closest('[data-w]'); if (w) return callWaiter(w.dataset.w);
+    const b = t.closest('[data-bill]'); if (b) return requestBill(b.dataset.bill, b);
+    const x = t.closest('[data-close]'); if (x) return close(x.closest('.overlay').id);
+    if (t.classList.contains('overlay')) close(t.id);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(o => close(o.id));
   });
 
-  // Modal Open/Close Controls
-  document.getElementById('btnOpenCart').addEventListener('click', () => {
-    renderCartModal();
-    document.getElementById('cartModal').classList.remove('hidden');
+  $('#cats').addEventListener('click', e => {
+    const b = e.target.closest('.cat'); if (!b) return;
+    document.querySelectorAll('.cat').forEach(x => x.classList.toggle('active', x === b));
+    cat = b.dataset.cat; renderMenu();
+  });
+  $('#search').addEventListener('input', e => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { q = e.target.value.toLowerCase().trim(); renderMenu(); }, 150);
+  });
+  $('#loc').addEventListener('change', () => {
+    refresh(); syncBill();
+    if ($('#cartSheet').classList.contains('open')) renderCart();
+  });$('#dArea').addEventListener('change', () => { refresh(); renderCart(); });
+  $('#cartBar').addEventListener('click', () => { renderCart(); open('cartSheet'); });
+  $('#placeBtn').addEventListener('click', place);
+  $('#billBtn').addEventListener('click', openBill);
+  $('#waiterBtn').addEventListener('click', () => {
+    const l = $('#loc').value;
+    if (!l || l === 'DELIVERY' || l === 'PICKUP') return toast('The waiter button is for dine-in tables only.');
+    open('waiterSheet');
   });
 
-  document.getElementById('btnCloseCart').addEventListener('click', () => {
-    document.getElementById('cartModal').classList.add('hidden');
-  });
+  const setTheme = t => {
+    document.documentElement.dataset.theme = t;
+    $('#themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+    try { localStorage.setItem('alma_theme', t); } catch (e) {}
+  };
+  $('#themeBtn').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+  setTheme(document.documentElement.dataset.theme);
 
-  // Dispatch Actions
-  document.getElementById('btnDispatchOrder').addEventListener('click', dispatchWhatsAppOrder);
-  document.getElementById('btnCallWaiter').addEventListener('click', () => dispatchQuickAlert('waiter'));
-  document.getElementById('btnRequestBill').addEventListener('click', () => dispatchQuickAlert('bill'));
-});
+  renderMenu(); refresh(); syncBill();
+  if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+})();
